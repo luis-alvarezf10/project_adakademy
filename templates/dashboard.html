@@ -1,137 +1,269 @@
 {% extends 'layouts/_base.html' %}
 
-{% block title %}Dashboard - Sistema de Notas{% endblock %}
+{% block title %}Dashboard - AdaKademy{% endblock %}
+
+{% block page_title %}
+    {% if user_type == 'student' %}
+        Panel de Estudiante
+    {% else %}
+        Panel de Profesor
+    {% endif %}
+{% endblock %}
 
 {% block dashboard_content %}
-<!-- Sección 1: Mensaje de Bienvenida -->
-<h1 class="text-3xl text-green-800">Django + Tailwind CSS + Flowbite</h1>
-
-
-<section class="welcome-section">
-    <h2>Bienvenido, 
-        {% if user_type == 'student' %}
-            {{ user_data.name_student }}
-        {% else %}
-            {{ user_data.name_teacher }}
-        {% endif %}
-    !</h2>
-    {% if user_type == 'student' %}
-        <div class="student-score">
-            <h3>Tu Puntuación Actual</h3>
-            <p>Promedio General: <strong>85.5</strong></p>
-        </div>
-    {% else %}
-        <div class="teacher-info">
-            <h3>Panel de Profesor</h3>
-            <p>Gestiona las evaluaciones de tus estudiantes</p>
-        </div>
-    {% endif %}
-</section>
-
-<!-- Sección 2: Materias Inscritas -->
-{% if user_type == 'student' %}
-<section class="subjects-section">
-    <h3>Materias Inscritas</h3>
-    <div class="subjects-grid">
-        <div class="subject-card">
-            <h4>Matemáticas</h4>
-            <p>Profesor: Juan Pérez</p>
-            <p>Promedio: 88</p>
-        </div>
-        <div class="subject-card">
-            <h4>Historia</h4>
-            <p>Profesor: María García</p>
-            <p>Promedio: 92</p>
-        </div>
-        <div class="subject-card">
-            <h4>Ciencias</h4>
-            <p>Profesor: Carlos López</p>
-            <p>Promedio: 76</p>
+<!-- Welcome Section -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 text-white card-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">
+                    ¡Bienvenido, 
+                    {% if user_type == 'student' %}
+                        {{ user_data.name_student }}
+                    {% else %}
+                        {{ user_data.name_teacher }}
+                    {% endif %}!
+                </h2>
+                {% if user_type == 'student' %}
+                    <p class="text-white/90">Revisa tus calificaciones y progreso académico</p>
+                {% else %}
+                    <p class="text-white/90">Gestiona las evaluaciones de tus estudiantes</p>
+                {% endif %}
+            </div>
+            <div class="text-6xl opacity-20">
+                {% if user_type == 'student' %}
+                    <i class="fas fa-user-graduate"></i>
+                {% else %}
+                    <i class="fas fa-chalkboard-teacher"></i>
+                {% endif %}
+            </div>
         </div>
     </div>
-</section>
+</div>
+
+<!-- Stats Cards -->
+{% if user_type == 'student' %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-xl p-6 card-shadow card-hover fade-in">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">Evaluaciones</p>
+                <p class="text-3xl font-bold text-green-600">
+                    {% if evaluations %}
+                        {{ evaluations|length|floatformat:0 }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+                <i class="fas fa-chart-line text-green-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">
+                    {% if user_type == 'student' %}
+                        Materias Cursando
+                    {% else %}
+                        Materias Asignadas
+                    {% endif %}
+                </p>
+                <p class="text-3xl font-bold text-blue-600">
+                    {% if user_type == 'student' %}
+                        3
+                    {% else %}
+                        2
+                    {% endif %}
+                </p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-full">
+                <i class="fas fa-book text-blue-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">Evaluaciones</p>
+                <p class="text-3xl font-bold text-purple-600">{{ evaluations|length }}</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-full">
+                <i class="fas fa-clipboard-list text-purple-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">Total Estudiantes</p>
+                <p class="text-3xl font-bold text-blue-600">45</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-full">
+                <i class="fas fa-users text-blue-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">Evaluaciones</p>
+                <p class="text-3xl font-bold text-green-600">{{ evaluations|length }}</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+                <i class="fas fa-clipboard-list text-green-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm font-medium">Promedio Clase</p>
+                <p class="text-3xl font-bold text-purple-600">82.3</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-full">
+                <i class="fas fa-chart-bar text-purple-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
 {% endif %}
 
-<!-- Sección 3: Evaluaciones -->
-<section class="evaluations-section">
-    {% if user_type == 'student' %}
-        <h3>Evaluaciones</h3>
-        <table class="evaluations-table">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Materia</th>
-                    <th>Tipo</th>
-                    <th>Tema</th>
-                    <th>Estudiante</th>
-                    <th>Puntuación</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for evaluation in evaluations %}
-                <tr>
-                    <td>{{ evaluation.date|date:"d/m/Y" }}</td>
-                    <td>{{ evaluation.course.name_course }}</td>
-                    <td>{{ evaluation.type }}</td>
-                    <td>{{ evaluation.subject }}</td>
-                    <td>{{ evaluation.student.name_student }}</td>
-                    <td>{{ evaluation.score }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">No hay evaluaciones registradas</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <h3>Gestionar Evaluaciones</h3>
-        <form method="post" action="{% url 'update_evaluations' %}">
-            {% csrf_token %}
-            <table class="evaluations-table">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Materia</th>
-                        <th>Tipo</th>
-                        <th>Tema</th>
-                        <th>Estudiante</th>
-                        <th>Puntuación</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for evaluation in evaluations %}
-                    <tr>
-                        <td>
-                            <input type="datetime-local" name="date_{{ evaluation.id }}" 
-                                   value="{{ evaluation.date|date:'Y-m-d\TH:i' }}" required>
-                        </td>
-                        <td>{{ evaluation.course.name_course }}</td>
-                        <td>
-                            <input type="text" name="type_{{ evaluation.id }}" 
-                                   value="{{ evaluation.type }}" required>
-                        </td>
-                        <td>
-                            <input type="text" name="subject_{{ evaluation.id }}" 
-                                   value="{{ evaluation.subject }}" required>
-                        </td>
-                        <td>{{ evaluation.student.name_student }}</td>
-                        <td>
-                            <input type="number" name="score_{{ evaluation.id }}" 
-                                   value="{{ evaluation.score }}" step="0.01" min="0" max="100" required>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6">No hay evaluaciones registradas</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% if evaluations %}
-                <button type="submit">Actualizar Evaluaciones</button>
+<!-- Evaluations Section -->
+<div class="bg-white rounded-xl card-shadow fade-in">
+    <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-gray-800">
+                {% if user_type == 'student' %}
+                    <i class="fas fa-clipboard-list mr-2 text-purple-600"></i>Mis Evaluaciones
+                {% else %}
+                    <i class="fas fa-edit mr-2 text-purple-600"></i>Gestionar Evaluaciones
+                {% endif %}
+            </h3>
+            {% if user_type == 'teacher' and evaluations %}
+                <button type="submit" form="evaluations-form" 
+                        class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-save mr-2"></i>Guardar Cambios
+                </button>
             {% endif %}
-        </form>
-    {% endif %}
-</section>
+        </div>
+    </div>
+    
+    <div class="p-6">
+        {% if user_type == 'student' %}
+            {% if evaluations %}
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Materia</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Tema</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Puntuación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evaluation in evaluations %}
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">{{ evaluation.date|date:"d/m/Y" }}</td>
+                                <td class="py-3 px-4">
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+                                        {{ evaluation.course.name_course|default:"Sin materia" }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">{{ evaluation.type }}</td>
+                                <td class="py-3 px-4">{{ evaluation.subject }}</td>
+                                <td class="py-3 px-4">
+                                    <span class="font-semibold {% if evaluation.score >= 70 %}text-green-600{% elif evaluation.score >= 60 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                                        {{ evaluation.score }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 text-lg">
+                        {% if user_type == 'student' %}
+                            No tienes evaluaciones registradas aún
+                        {% else %}
+                            No hay evaluaciones en tus cursos asignados
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        {% else %}
+            {% if evaluations %}
+                <form method="post" action="{% url 'update_evaluations' %}" id="evaluations-form">
+                    {% csrf_token %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Materia</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Tema</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Estudiante</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Puntuación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for evaluation in evaluations %}
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4">
+                                        <input type="datetime-local" name="date_{{ evaluation.id }}" 
+                                               value="{{ evaluation.date|date:'Y-m-d\TH:i' }}" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+                                            {{ evaluation.course.name_course|default:"Sin materia" }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <input type="text" name="type_{{ evaluation.id }}" 
+                                               value="{{ evaluation.type }}" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <input type="text" name="subject_{{ evaluation.id }}" 
+                                               value="{{ evaluation.subject }}" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                                    </td>
+                                    <td class="py-3 px-4">{{ evaluation.student.name_student }}</td>
+                                    <td class="py-3 px-4">
+                                        <input type="number" name="score_{{ evaluation.id }}" 
+                                               value="{{ evaluation.score }}" step="0.01" min="0" max="100" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            {% else %}
+                <div class="text-center py-12">
+                    <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 text-lg">No hay evaluaciones en tus cursos asignados</p>
+                    <p class="text-gray-400 text-sm mt-2">Las evaluaciones de tus materias aparecerán aquí</p>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

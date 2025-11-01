@@ -1,6 +1,4 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from model_students.models import Student, Teacher, Evaluation
 
@@ -32,7 +30,6 @@ def home(request):
 
 def register(request):
     if request.method == 'POST':
-        user_type = request.POST['user_type']
         username = request.POST['username']
         email = request.POST['email']
         ci = request.POST['ci']
@@ -43,41 +40,49 @@ def register(request):
             messages.error(request, 'Las contraseñas no coinciden')
             return render(request, 'registration/register.html')
         
+        # Determinar tipo de usuario automáticamente por email
+        is_teacher = email.endswith('@profesor.edu') or email.endswith('@teacher.edu') or 'profesor' in email.lower()
+        
         try:
-            if user_type == 'student':
-                Student.objects.create(
-                    name_student=username,
-                    ci=ci,
-                    email=email,
-                    password=password
-                )
-            else:
+            if is_teacher:
                 Teacher.objects.create(
                     name_teacher=username,
                     ci=ci,
                     email=email,
                     password=password
                 )
-            messages.success(request, 'Usuario registrado exitosamente')
+                messages.success(request, 'Profesor registrado exitosamente')
+            else:
+                Student.objects.create(
+                    name_student=username,
+                    ci=ci,
+                    email=email,
+                    password=password
+                )
+                messages.success(request, 'Estudiante registrado exitosamente')
             return redirect('home')
         except:
-            messages.error(request, 'Error al registrar usuario')
+            messages.error(request, 'Error al registrar usuario. Verifique que el email y cédula no estén en uso')
     
     return render(request, 'registration/register.html')
 
-@login_required
 def dashboard(request):
     user_type = request.session.get('user_type')
     user_id = request.session.get('user_id')
     
+    # Verificar si el usuario está logueado
+    if not user_type or not user_id:
+        messages.error(request, 'Debes iniciar sesión para acceder al dashboard')
+        return redirect('home')
+    
     if user_type == 'student':
         user_data = Student.objects.get(ci=user_id)
-        # Obtener todas las evaluaciones para que el estudiante las vea
-        evaluations = Evaluation.objects.all().order_by('date')
+        # Solo evaluaciones del estudiante logueado
+        evaluations = Evaluation.objects.filter(student=user_data).order_by('-date')
     else:
         user_data = Teacher.objects.get(ci=user_id)
-        # Obtener todas las evaluaciones para profesores
-        evaluations = Evaluation.objects.all().order_by('date')
+        # Solo evaluaciones de cursos asignados al profesor
+        evaluations = Evaluation.objects.filter(course__teacher=user_data).order_by('-date')
     
     return render(request, 'dashboard.html', {
         'user_type': user_type,
@@ -86,6 +91,12 @@ def dashboard(request):
     })
 
 def update_evaluations(request):
+    # Verificar si el usuario está logueado y es profesor
+    user_type = request.session.get('user_type')
+    if not user_type or user_type != 'teacher':
+        messages.error(request, 'No tienes permisos para realizar esta acción')
+        return redirect('home')
+    
     if request.method == 'POST':
         for key, value in request.POST.items():
             if key.startswith('date_'):

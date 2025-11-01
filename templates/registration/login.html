@@ -1,28 +1,75 @@
 {% extends 'layouts/_base.html' %}
 
-{% block title %}Login - Sistema de Notas{% endblock %}
+{% block title %}Iniciar Sesión - AdaKademy{% endblock %}
 
 {% block auth_content %}
-<h2>Iniciar Sesión</h2>
+<div class="min-h-screen flex items-center justify-center gradient-bg py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="mx-auto h-16 w-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900">AdaKademy</h2>
+                <p class="mt-2 text-gray-600">Inicia sesión en tu cuenta</p>
+            </div>
 
-{% if messages %}
-    {% for message in messages %}
-        <div style="color: red;">{{ message }}</div>
-    {% endfor %}
-{% endif %}
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                <div class="mb-4 p-4 rounded-lg bg-red-100 text-red-700 border border-red-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        {{ message }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
 
-<form method="post">
-    {% csrf_token %}
-    <div>
-        <label>Nombre de Usuario:</label>
-        <input type="text" name="username" required>
+            <!-- Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user mr-2"></i>Nombre de Usuario
+                    </label>
+                    <input type="text" name="username" id="username" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-lock mr-2"></i>Contraseña
+                    </label>
+                    <input type="password" name="password" id="password" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors">
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-105">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+                </button>
+            </form>
+
+            <!-- Register Link -->
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    ¿No tienes cuenta? 
+                    <a href="{% url 'register' %}" class="text-purple-600 hover:text-purple-700 font-medium">
+                        Regístrate aquí
+                    </a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center text-white/80">
+            <p class="text-sm">
+                <i class="fas fa-shield-alt mr-1"></i>
+                Sistema Académico Seguro
+            </p>
+        </div>
     </div>
-    <div>
-        <label>Contraseña:</label>
-        <input type="password" name="password" required>
-    </div>
-    <button type="submit">Ingresar</button>
-</form>
-
-<p><a href="{% url 'register' %}">¿No tienes cuenta? Regístrate</a></p>
+</div>
 {% endblock %}
