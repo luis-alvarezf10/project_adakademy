@@ -52,7 +52,7 @@
 <!-- Sección 3: Evaluaciones -->
 <section class="evaluations-section">
     {% if user_type == 'student' %}
-        <h3>Próximas Evaluaciones</h3>
+        <h3>Evaluaciones</h3>
         <table class="evaluations-table">
             <thead>
                 <tr>
@@ -60,6 +60,8 @@
                     <th>Materia</th>
                     <th>Tipo</th>
                     <th>Tema</th>
+                    <th>Estudiante</th>
+                    <th>Puntuación</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,10 +71,12 @@
                     <td>{{ evaluation.course.name_course }}</td>
                     <td>{{ evaluation.type }}</td>
                     <td>{{ evaluation.subject }}</td>
+                    <td>{{ evaluation.student.name_student }}</td>
+                    <td>{{ evaluation.score }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4">No hay evaluaciones programadas</td>
+                    <td colspan="6">No hay evaluaciones registradas</td>
                 </tr>
                 {% endfor %}
             </tbody>

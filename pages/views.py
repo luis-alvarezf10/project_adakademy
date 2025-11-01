@@ -72,8 +72,8 @@ def dashboard(request):
     
     if user_type == 'student':
         user_data = Student.objects.get(ci=user_id)
-        # Obtener evaluaciones del estudiante
-        evaluations = Evaluation.objects.filter(student=user_data).order_by('date')
+        # Obtener todas las evaluaciones para que el estudiante las vea
+        evaluations = Evaluation.objects.all().order_by('date')
     else:
         user_data = Teacher.objects.get(ci=user_id)
         # Obtener todas las evaluaciones para profesores
