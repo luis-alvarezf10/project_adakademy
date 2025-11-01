@@ -89,11 +89,17 @@
                             <td class="py-3 px-4">{{ evaluation.type }}</td>
                             <td class="py-3 px-4">{{ evaluation.subject }}</td>
                             <td class="py-3 px-4">
-                                <a href="{% url 'delete_evaluation' evaluation.id %}" 
-                                   onclick="return confirm('¿Eliminar esta evaluación?')" 
-                                   class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'edit_evaluation' evaluation.id %}" 
+                                       class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'delete_evaluation' evaluation.id %}" 
+                                       onclick="return confirm('¿Eliminar esta evaluación?')" 
+                                       class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

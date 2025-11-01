@@ -161,6 +161,48 @@ def create_evaluation(request):
     
     return redirect('manage_evaluations')
 
+def edit_evaluation(request, eval_id):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    if not user_type or user_type != 'teacher':
+        messages.error(request, 'No tienes permisos')
+        return redirect('home')
+    
+    teacher = Teacher.objects.get(ci=user_id)
+    evaluation = Evaluation.objects.get(id=eval_id, course__teacher=teacher)
+    courses = Course.objects.filter(teacher=teacher)
+    
+    return render(request, 'edit_evaluation.html', {
+        'user_type': user_type,
+        'user_data': teacher,
+        'evaluation': evaluation,
+        'courses': courses
+    })
+
+def update_evaluation(request, eval_id):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    if not user_type or user_type != 'teacher':
+        return redirect('home')
+    
+    if request.method == 'POST':
+        try:
+            teacher = Teacher.objects.get(ci=user_id)
+            evaluation = Evaluation.objects.get(id=eval_id, course__teacher=teacher)
+            course = Course.objects.get(id=request.POST['course_id'], teacher=teacher)
+            
+            evaluation.date = request.POST['date']
+            evaluation.subject = request.POST['subject']
+            evaluation.type = request.POST['type']
+            evaluation.course = course
+            evaluation.save()
+            
+            messages.success(request, 'Evaluación actualizada exitosamente')
+        except:
+            messages.error(request, 'Error al actualizar')
+    
+    return redirect('manage_evaluations')
+
 def delete_evaluation(request, eval_id):
     # Verificar si el usuario es profesor
     user_type = request.session.get('user_type')
