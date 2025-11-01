@@ -47,8 +47,14 @@
     <div class="bg-white rounded-xl p-6 card-shadow card-hover fade-in">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 text-sm font-medium">Promedio General</p>
-                <p class="text-3xl font-bold text-green-600">85.5</p>
+                <p class="text-gray-600 text-sm font-medium">Evaluaciones</p>
+                <p class="text-3xl font-bold text-green-600">
+                    {% if evaluations %}
+                        {{ evaluations|length|floatformat:0 }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </p>
             </div>
             <div class="bg-green-100 p-3 rounded-full">
                 <i class="fas fa-chart-line text-green-600 text-xl"></i>
@@ -59,8 +65,20 @@
     <div class="bg-white rounded-xl p-6 card-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 text-sm font-medium">Materias Cursando</p>
-                <p class="text-3xl font-bold text-blue-600">6</p>
+                <p class="text-gray-600 text-sm font-medium">
+                    {% if user_type == 'student' %}
+                        Materias Cursando
+                    {% else %}
+                        Materias Asignadas
+                    {% endif %}
+                </p>
+                <p class="text-3xl font-bold text-blue-600">
+                    {% if user_type == 'student' %}
+                        3
+                    {% else %}
+                        2
+                    {% endif %}
+                </p>
             </div>
             <div class="bg-blue-100 p-3 rounded-full">
                 <i class="fas fa-book text-blue-600 text-xl"></i>
@@ -178,7 +196,13 @@
             {% else %}
                 <div class="text-center py-12">
                     <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
-                    <p class="text-gray-500 text-lg">No hay evaluaciones registradas</p>
+                    <p class="text-gray-500 text-lg">
+                        {% if user_type == 'student' %}
+                            No tienes evaluaciones registradas aún
+                        {% else %}
+                            No hay evaluaciones en tus cursos asignados
+                        {% endif %}
+                    </p>
                 </div>
             {% endif %}
         {% else %}
@@ -235,8 +259,8 @@
             {% else %}
                 <div class="text-center py-12">
                     <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
-                    <p class="text-gray-500 text-lg">No hay evaluaciones para gestionar</p>
-                    <p class="text-gray-400 text-sm mt-2">Las evaluaciones aparecerán aquí cuando se registren</p>
+                    <p class="text-gray-500 text-lg">No hay evaluaciones en tus cursos asignados</p>
+                    <p class="text-gray-400 text-sm mt-2">Las evaluaciones de tus materias aparecerán aquí</p>
                 </div>
             {% endif %}
         {% endif %}
