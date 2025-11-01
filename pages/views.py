@@ -99,18 +99,37 @@ def update_evaluations(request):
     
     if request.method == 'POST':
         for key, value in request.POST.items():
-            if key.startswith('date_'):
+            if key.startswith('score_'):
                 eval_id = key.split('_')[1]
                 evaluation = Evaluation.objects.get(id=eval_id)
-                evaluation.date = value
-                evaluation.type = request.POST.get(f'type_{eval_id}')
-                evaluation.subject = request.POST.get(f'subject_{eval_id}')
-                evaluation.score = request.POST.get(f'score_{eval_id}')
+                evaluation.score = value
                 evaluation.save()
         
-        messages.success(request, 'Evaluaciones actualizadas correctamente')
+        messages.success(request, 'Puntuaciones actualizadas correctamente')
     
-    return redirect('dashboard')
+    return redirect('classroom')
+
+def classroom(request):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    
+    if user_type == 'student':
+        user_data = Student.objects.get(ci=user_id)
+        # Obtener todos los estudiantes para mostrar compañeros
+        students = Student.objects.all()
+        evaluations = None
+    else:
+        user_data = Teacher.objects.get(ci=user_id)
+        # Obtener todos los estudiantes y sus evaluaciones
+        students = Student.objects.all()
+        evaluations = Evaluation.objects.all().select_related('student', 'course')
+    
+    return render(request, 'classroom.html', {
+        'user_type': user_type,
+        'user_data': user_data,
+        'students': students,
+        'evaluations': evaluations
+    })
 
 def manage_evaluations(request):
     user_type = request.session.get('user_type')
