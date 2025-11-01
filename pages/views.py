@@ -112,6 +112,40 @@ def update_evaluations(request):
     
     return redirect('dashboard')
 
+def profile(request):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    
+    if not user_type or not user_id:
+        return redirect('home')
+    
+    if user_type == 'student':
+        user_data = Student.objects.get(ci=user_id)
+    else:
+        user_data = Teacher.objects.get(ci=user_id)
+    
+    return render(request, 'profile.html', {
+        'user_type': user_type,
+        'user_data': user_data
+    })
+
+def settings(request):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    
+    if not user_type or not user_id:
+        return redirect('home')
+    
+    if user_type == 'student':
+        user_data = Student.objects.get(ci=user_id)
+    else:
+        user_data = Teacher.objects.get(ci=user_id)
+    
+    return render(request, 'settings.html', {
+        'user_type': user_type,
+        'user_data': user_data
+    })
+
 def logout_view(request):
     request.session.flush()
     return redirect('home') 
