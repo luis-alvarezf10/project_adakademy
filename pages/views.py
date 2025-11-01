@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from model_students.models import Student, Teacher, Evaluation
+from model_students.models import Student, Teacher, Evaluation, Course
 
 def home(request):
     if request.method == 'POST':
@@ -111,6 +111,73 @@ def update_evaluations(request):
         messages.success(request, 'Evaluaciones actualizadas correctamente')
     
     return redirect('dashboard')
+
+def manage_evaluations(request):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    if not user_type or user_type != 'teacher':
+        messages.error(request, 'No tienes permisos para acceder a esta página')
+        return redirect('home')
+    
+    teacher = Teacher.objects.get(ci=user_id)
+    courses = Course.objects.filter(teacher=teacher)
+    evaluations = Evaluation.objects.filter(course__teacher=teacher).order_by('-date')
+    
+    return render(request, 'manage_evaluations.html', {
+        'user_type': user_type,
+        'user_data': teacher,
+        'teacher': teacher,
+        'courses': courses,
+        'evaluations': evaluations
+    })
+
+def create_evaluation(request):
+    # Verificar si el usuario es profesor
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    if not user_type or user_type != 'teacher':
+        messages.error(request, 'No tienes permisos para realizar esta acción')
+        return redirect('home')
+    
+    if request.method == 'POST':
+        try:
+            teacher = Teacher.objects.get(ci=user_id)
+            course_id = request.POST['course_id']
+            course = Course.objects.get(id=course_id, teacher=teacher)
+            
+            # Crear evaluación para todos los estudiantes (sin asignar estudiante específico)
+            # Los estudiantes verán la evaluación disponible para su materia
+            Evaluation.objects.create(
+                date=request.POST['date'],
+                subject=request.POST['subject'],
+                type=request.POST['type'],
+                score=0,  # Puntuación inicial 0, se actualizará después
+                course=course,
+                student=None  # Sin estudiante específico
+            )
+            messages.success(request, f'Evaluación creada para la materia {course.name_course}')
+        except Exception as e:
+            messages.error(request, 'Error al crear la evaluación')
+    
+    return redirect('manage_evaluations')
+
+def delete_evaluation(request, eval_id):
+    # Verificar si el usuario es profesor
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    if not user_type or user_type != 'teacher':
+        messages.error(request, 'No tienes permisos para realizar esta acción')
+        return redirect('home')
+    
+    try:
+        teacher = Teacher.objects.get(ci=user_id)
+        evaluation = Evaluation.objects.get(id=eval_id, course__teacher=teacher)
+        evaluation.delete()
+        messages.success(request, 'Evaluación eliminada exitosamente')
+    except:
+        messages.error(request, 'Error al eliminar la evaluación')
+    
+    return redirect('manage_evaluations')
 
 def logout_view(request):
     request.session.flush()

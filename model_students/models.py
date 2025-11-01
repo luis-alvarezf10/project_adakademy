@@ -47,7 +47,7 @@ class Evaluation(models.Model):
     score = models.DecimalField(max_digits=5, decimal_places=2)
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
 
 
 

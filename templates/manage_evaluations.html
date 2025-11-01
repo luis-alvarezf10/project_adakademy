@@ -1,0 +1,111 @@
+{% extends 'layouts/_base.html' %}
+
+{% block title %}Gestión de Evaluaciones - AdaKademy{% endblock %}
+
+{% block page_title %}Gestión de Evaluaciones{% endblock %}
+
+{% block dashboard_content %}
+<!-- Formulario crear evaluación -->
+<div class="bg-white rounded-xl card-shadow fade-in mb-6">
+    <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-800">
+            <i class="fas fa-plus-circle mr-2 text-green-600"></i>Crear Nueva Evaluación
+        </h3>
+    </div>
+    
+    <div class="p-6">
+        <form method="post" action="{% url 'create_evaluation' %}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Materia</label>
+                <select name="course_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    <option value="">Seleccionar materia...</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.name_course }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                <select name="type" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    <option value="">Seleccionar tipo...</option>
+                    <option value="Examen">Examen</option>
+                    <option value="Quiz">Quiz</option>
+                    <option value="Tarea">Tarea</option>
+                    <option value="Proyecto">Proyecto</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tema</label>
+                <input type="text" name="subject" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+                <input type="datetime-local" name="date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+            </div>
+            
+            <div class="md:col-span-2">
+                <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Crear Evaluación
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista evaluaciones -->
+<div class="bg-white rounded-xl card-shadow fade-in">
+    <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-800">
+            <i class="fas fa-list mr-2 text-purple-600"></i>Evaluaciones Creadas
+        </h3>
+    </div>
+    
+    <div class="p-6">
+        {% if evaluations %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Materia</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Tema</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-700">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for evaluation in evaluations %}
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-3 px-4">{{ evaluation.date|date:"d/m/Y H:i" }}</td>
+                            <td class="py-3 px-4">
+                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                                    {{ evaluation.course.name_course }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">{{ evaluation.type }}</td>
+                            <td class="py-3 px-4">{{ evaluation.subject }}</td>
+                            <td class="py-3 px-4">
+                                <a href="{% url 'delete_evaluation' evaluation.id %}" 
+                                   onclick="return confirm('¿Eliminar esta evaluación?')" 
+                                   class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 text-lg">No has creado evaluaciones</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -149,11 +149,13 @@
                     <i class="fas fa-edit mr-2 text-purple-600"></i>Gestionar Evaluaciones
                 {% endif %}
             </h3>
-            {% if user_type == 'teacher' and evaluations %}
-                <button type="submit" form="evaluations-form" 
-                        class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                    <i class="fas fa-save mr-2"></i>Guardar Cambios
-                </button>
+            {% if user_type == 'teacher' %}
+                <div class="mt-4">
+                    <a href="{% url 'manage_evaluations' %}" 
+                       class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors inline-flex items-center">
+                        <i class="fas fa-cog mr-2"></i>Gestionar Evaluaciones
+                    </a>
+                </div>
             {% endif %}
         </div>
     </div>
@@ -207,55 +209,38 @@
             {% endif %}
         {% else %}
             {% if evaluations %}
-                <form method="post" action="{% url 'update_evaluations' %}" id="evaluations-form">
-                    {% csrf_token %}
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Materia</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Tema</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Estudiante</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Puntuación</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for evaluation in evaluations %}
-                                <tr class="border-b border-gray-100">
-                                    <td class="py-3 px-4">
-                                        <input type="datetime-local" name="date_{{ evaluation.id }}" 
-                                               value="{{ evaluation.date|date:'Y-m-d\TH:i' }}" 
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
-                                            {{ evaluation.course.name_course|default:"Sin materia" }}
-                                        </span>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <input type="text" name="type_{{ evaluation.id }}" 
-                                               value="{{ evaluation.type }}" 
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <input type="text" name="subject_{{ evaluation.id }}" 
-                                               value="{{ evaluation.subject }}" 
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                                    </td>
-                                    <td class="py-3 px-4">{{ evaluation.student.name_student }}</td>
-                                    <td class="py-3 px-4">
-                                        <input type="number" name="score_{{ evaluation.id }}" 
-                                               value="{{ evaluation.score }}" step="0.01" min="0" max="100" 
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </form>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Materia</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Tipo</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Tema</th>
+                                <th class="text-left py-3 px-4 font-medium text-gray-700">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evaluation in evaluations %}
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">{{ evaluation.date|date:"d/m/Y H:i" }}</td>
+                                <td class="py-3 px-4">
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+                                        {{ evaluation.course.name_course }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">{{ evaluation.type }}</td>
+                                <td class="py-3 px-4">{{ evaluation.subject }}</td>
+                                <td class="py-3 px-4">
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">
+                                        Disponible
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% else %}
                 <div class="text-center py-12">
                     <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
