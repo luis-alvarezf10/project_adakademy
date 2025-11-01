@@ -1,0 +1,61 @@
+{% extends 'layouts/_base.html' %}
+
+{% block title %}Configuración - AdaKademy{% endblock %}
+
+{% block page_title %}Configuración{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl card-shadow">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-800">
+                <i class="fas fa-cog mr-2 text-purple-600"></i>Configuración de Cuenta
+            </h3>
+        </div>
+        
+        <div class="p-6">
+            <div class="space-y-6">
+                <div class="border-b border-gray-200 pb-6">
+                    <h4 class="text-lg font-medium text-gray-800 mb-4">Preferencias</h4>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-gray-700">Notificaciones por email</p>
+                                <p class="text-sm text-gray-500">Recibir notificaciones sobre evaluaciones</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-b border-gray-200 pb-6">
+                    <h4 class="text-lg font-medium text-gray-800 mb-4">Seguridad</h4>
+                    <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-key mr-2"></i>Cambiar Contraseña
+                    </button>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-medium text-gray-800 mb-4">Información de la Cuenta</h4>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600">
+                            <strong>Usuario:</strong> 
+                            {% if user_type == 'student' %}
+                                {{ user_data.name_student }}
+                            {% else %}
+                                {{ user_data.name_teacher }}
+                            {% endif %}
+                        </p>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <strong>Email:</strong> {{ user_data.email }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
