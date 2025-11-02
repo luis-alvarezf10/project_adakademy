@@ -131,6 +131,51 @@ def classroom(request):
         'evaluations': evaluations
     })
 
+def my_subjects(request):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    
+    # Solo estudiantes pueden acceder
+    if user_type != 'student':
+        messages.error(request, 'Acceso denegado')
+        return redirect('dashboard')
+    
+    user_data = Student.objects.get(ci=user_id)
+    
+    # Obtener evaluaciones del estudiante agrupadas por materia
+    evaluations = Evaluation.objects.filter(student=user_data).select_related('course')
+    
+    # Calcular promedio por materia
+    subjects_data = {}
+    total_score = 0
+    total_count = 0
+    
+    for evaluation in evaluations:
+        course_name = evaluation.course.name_course
+        if course_name not in subjects_data:
+            subjects_data[course_name] = {
+                'course': evaluation.course,
+                'scores': [],
+                'evaluations': []
+            }
+        subjects_data[course_name]['scores'].append(float(evaluation.score))
+        subjects_data[course_name]['evaluations'].append(evaluation)
+        total_score += float(evaluation.score)
+        total_count += 1
+    
+    # Calcular promedios
+    for subject in subjects_data.values():
+        subject['average'] = sum(subject['scores']) / len(subject['scores'])
+    
+    overall_average = total_score / total_count if total_count > 0 else 0
+    
+    return render(request, 'my_subjects.html', {
+        'user_type': user_type,
+        'user_data': user_data,
+        'subjects_data': subjects_data,
+        'overall_average': overall_average
+    })
+
 def logout_view(request):
     request.session.flush()
     return redirect('home') 
