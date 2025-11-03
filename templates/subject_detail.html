@@ -1,0 +1,90 @@
+{% extends 'layouts/_base.html' %}
+
+{% block title %}{{ subject_name }} - Detalles{% endblock %}
+
+{% block page_title %}{{ subject_name }}{% endblock %}
+
+{% block dashboard_content %}
+<!-- Botón volver -->
+<div class="mb-6">
+    <a href="{% url 'my_subjects' %}" class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Volver a Mis Materias
+    </a>
+</div>
+
+<!-- Header de la materia -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-3xl font-bold mb-2">{{ subject_name | upper }}</h3>
+                {% if course.teacher %}
+                <p class="text-blue-100">
+                    <i class="fas fa-user-tie mr-2"></i>
+                    {{ course.teacher.name | title }} {{ course.teacher.last_name | title }}
+                </p>
+                {% endif %}
+            </div>
+            <div class="text-right">
+                <div class="text-6xl font-bold">{{ average|floatformat:1 }}</div>
+                <div class="text-sm text-blue-100">Promedio</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de evaluaciones -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="px-6 py-4 bg-gray-50 border-b">
+        <h3 class="text-lg font-semibold text-gray-800">
+            <i class="fas fa-clipboard-list mr-2 text-blue-600"></i>
+            Evaluaciones Realizadas: ({{ punctuations|length }})
+        </h3>
+    </div>
+    
+    <div class="divide-y divide-gray-200">
+        {% for punctuation in punctuations %}
+        <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <h4 class="text-lg font-medium text-gray-900">{{ punctuation.evaluation.subject }}</h4>
+                    <div class="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                        <span>
+                            <i class="fas fa-tag mr-1"></i>
+                            {{ punctuation.evaluation.type }}
+                        </span>
+                        <span>
+                            <i class="fas fa-calendar mr-1"></i>
+                            {{ punctuation.evaluation.date|date:"d/m/Y" }}
+                        </span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    {% if punctuation.score > 10 %}
+                        <div class="text-3xl font-bold text-blue-600">
+                            {{ punctuation.score }}
+                        </div>
+                    {% elif punctuation.score == 10 %}
+                        <div class="text-3xl font-bold text-yellow-600">
+                            {{ punctuation.score }}
+                        </div>
+                    {% else %}
+                        <div class="text-3xl font-bold text-red-600">
+                            {{ punctuation.score }}
+                        </div>
+                    {% endif %}
+                    <div class="text-sm text-gray-500">sobre 20</div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="px-6 py-12 text-center">
+            <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl text-gray-500 mb-2">No hay evaluaciones</h3>
+            <p class="text-gray-400">Aún no se han registrado evaluaciones para esta materia</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

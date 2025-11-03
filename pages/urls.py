@@ -12,6 +12,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('settings/', views.settings, name='settings'),
     path('my-subjects/', views.my_subjects, name='my_subjects'),
+    path('subject/<str:subject_name>/', views.subject_detail, name='subject_detail'),
     path('update-evaluations/', views.update_evaluations, name='update_evaluations'),
     path('logout/', views.logout_view, name='logout'),
 ]

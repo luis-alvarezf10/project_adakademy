@@ -79,13 +79,9 @@
                         </div>
                         <div class="flex-1 text-left">
                             <p class="font-medium text-sm">
-                                {% if user_type == 'student' %}
-                                    {{ user_data.name_student }}
-                                {% else %}
-                                    {{ user_data.name_teacher }}
-                                {% endif %}
+                                {{ user_data.name | title }} {{ user_data.last_name | title }}
                             </p>
-                            <p class="text-xs text-white/70 capitalize">{{ user_type }}</p>
+                            <p class="text-xs text-white/70 capitalize">{{ user_data.username }}</p>
                         </div>
                         <i class="fas fa-chevron-up text-xs transition-transform" id="chevron-icon"></i>
                     </button>
@@ -93,11 +89,11 @@
                     <!-- Menú desplegable -->
                     <div id="user-dropdown" class="hidden absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border overflow-hidden">
                         <a href="{% url 'profile' %}" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-user-edit text-purple-600"></i>
+                            <i class="fa-solid fa-user-pen text-gray-500 text-lg"></i>
                             <span class="text-sm">Mi Perfil</span>
                         </a>
                         <a href="{% url 'settings' %}" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-cog text-purple-600"></i>
+                            <i class="fa-solid fa-gear text-lg text-gray-500"></i>
                             <span class="text-sm">Configuración</span>
                         </a>
                         <div class="border-t border-gray-100"></div>

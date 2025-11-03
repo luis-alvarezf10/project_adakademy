@@ -43,11 +43,7 @@
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <p class="text-sm text-gray-600">
                             <strong>Usuario:</strong> 
-                            {% if user_type == 'student' %}
-                                {{ user_data.name_student }}
-                            {% else %}
-                                {{ user_data.name_teacher }}
-                            {% endif %}
+                            {{ user_data.username }}
                         </p>
                         <p class="text-sm text-gray-600 mt-1">
                             <strong>Email:</strong> {{ user_data.email }}
