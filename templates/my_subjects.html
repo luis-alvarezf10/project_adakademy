@@ -14,12 +14,9 @@
                 <p class="text-blue-100">Tu rendimiento académico actual</p>
             </div>
             <div class="text-right">
-                <div class="text-4xl font-bold">{{ overall_average|floatformat:1 }}</div>
-                <div class="text-sm text-blue-100">sobre 100</div>
+                <div class="text-6xl font-bold">{{ overall_average|floatformat:1 }}</div>
+                <div class="text-sm text-blue-100">sobre 20</div>
             </div>
-        </div>
-        <div class="mt-4 bg-white/20 rounded-full h-2">
-            <div class="bg-white rounded-full h-2 transition-all duration-300">{{ overall_average }}</div>
         </div>
     </div>
 </div>
@@ -34,14 +31,13 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for subject_name, subject_info in subjects_data.items %}
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+    <div class="bg-white card-shadow card-hover fade-in overflow-hidden rounded-lg">
         <!-- Header con color dinámico -->
         <div class="h-32 bg-gradient-to-br 
             {% cycle 'from-red-400 to-red-600' 'from-green-400 to-green-600' 'from-blue-400 to-blue-600' 'from-yellow-400 to-yellow-600' 'from-purple-400 to-purple-600' 'from-pink-400 to-pink-600' %} 
             flex items-center justify-center text-white">
             <div class="text-center">
-                <i class="fas fa-book text-3xl mb-2"></i>
-                <h4 class="text-lg font-bold">{{ subject_name }}</h4>
+                <h4 class="text-xl font-bold">{{ subject_name | upper }}</h4>
             </div>
         </div>
         
@@ -51,10 +47,6 @@
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-sm text-gray-600">Promedio</span>
                     <span class="text-2xl font-bold text-gray-800">{{ subject_info.average|floatformat:1 }}</span>
-                </div>
-                <div class="bg-gray-200 rounded-full h-2">
-                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-full h-2 transition-all duration-300" 
-                         >{{ subject_info.average }}</div>
                 </div>
             </div>
             
@@ -66,70 +58,27 @@
                 {% if subject_info.course.teacher %}
                 <p class="text-sm text-gray-600">
                     <i class="fas fa-user-tie mr-1"></i>
-                    {{ subject_info.course.teacher.name_teacher }}
+                    {{ subject_info.course.teacher.name | title }} {{ subject_info.course.teacher.last_name  | title}}
                 </p>
                 {% endif %}
             </div>
             
             <!-- Botón Ver Detalles -->
-            <button onclick="showSubjectDetails('{{ subject_name }}')" 
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
+            <a href="{% url 'subject_detail' subject_name %}" 
+               class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
                 <i class="fas fa-eye mr-2"></i>
                 Ver Detalles
-            </button>
+            </a>
         </div>
     </div>
     {% empty %}
     <div class="col-span-full text-center py-12">
         <i class="fas fa-book-open text-6xl text-gray-300 mb-4"></i>
         <h3 class="text-xl text-gray-500 mb-2">No tienes materias asignadas</h3>
-        <p class="text-gray-400">Contacta con tu profesor para que te asigne evaluaciones</p>
+        <p class="text-gray-400">Contacta con administracion para que te asigne materias</p>
     </div>
     {% endfor %}
 </div>
 
-<!-- Modal para detalles de materia -->
-<div id="subjectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="modalTitle" class="text-xl font-bold text-gray-800"></h3>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            
-            <div id="modalContent" class="space-y-4">
-                <!-- Contenido dinámico -->
-            </div>
-        </div>
-    </div>
-</div>
 
-<script>
-// Crear objeto con datos de evaluaciones
-const subjectsData = {};
-
-function showSubjectDetails(subjectName) {
-    document.getElementById('modalTitle').textContent = 'Detalles de ' + subjectName;
-    
-    let content = '<div class="space-y-3">';
-    content += '<p class="text-gray-500 text-center py-4">No hay evaluaciones registradas</p>';
-    content += '</div>';
-    
-    document.getElementById('modalContent').innerHTML = content;
-    document.getElementById('subjectModal').classList.remove('hidden');
-}
-
-function closeModal() {
-    document.getElementById('subjectModal').classList.add('hidden');
-}
-
-// Cerrar modal al hacer clic fuera
-document.getElementById('subjectModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeModal();
-    }
-});
-</script>
 {% endblock %}

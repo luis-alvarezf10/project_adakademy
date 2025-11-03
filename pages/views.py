@@ -259,41 +259,53 @@ def settings(request):
     return render(request, 'settings.html', {
         'user_type': user_type,
         'user_data': user_data})
+    
 def my_subjects(request):
     user_type = request.session.get('user_type')
     user_id = request.session.get('user_id')
     
     # Solo estudiantes pueden acceder
     if user_type != 'student':
-        messages.error(request, 'Acceso denegado')
+        messages.error(request, 'Acceso denied')
         return redirect('dashboard')
     
     user_data = Student.objects.get(ci=user_id)
     
-    # Obtener evaluaciones del estudiante agrupadas por materia
-    evaluations = Evaluation.objects.filter(student=user_data).select_related('course')
+    # Obtener todas las materias del grado del estudiante
+    all_courses = Course.objects.filter(grade=user_data.grade)
     
-    # Calcular promedio por materia
+    # Obtener puntuaciones del estudiante
+    punctuations = Punctuation.objects.filter(student=user_data).select_related('evaluation__course')
+    
+    # Inicializar datos de materias
     subjects_data = {}
     total_score = 0
     total_count = 0
     
-    for evaluation in evaluations:
-        course_name = evaluation.course.name_course
-        if course_name not in subjects_data:
-            subjects_data[course_name] = {
-                'course': evaluation.course,
-                'scores': [],
-                'evaluations': []
-            }
-        subjects_data[course_name]['scores'].append(float(evaluation.score))
-        subjects_data[course_name]['evaluations'].append(evaluation)
-        total_score += float(evaluation.score)
-        total_count += 1
+    # Crear entrada para todas las materias del grado
+    for course in all_courses:
+        subjects_data[course.name_course] = {
+            'course': course,
+            'scores': [],
+            'evaluations': [],
+            'average': 0
+        }
+    
+    # Agregar puntuaciones existentes
+    for punctuation in punctuations:
+        course_name = punctuation.evaluation.course.name_course
+        if course_name in subjects_data:
+            subjects_data[course_name]['scores'].append(float(punctuation.score))
+            subjects_data[course_name]['evaluations'].append(punctuation.evaluation)
+            total_score += float(punctuation.score)
+            total_count += 1
+            # Debug: imprimir información
+            print(f"Materia: {course_name}, Nota: {punctuation.score}, Evaluación: {punctuation.evaluation.subject}")
     
     # Calcular promedios
     for subject in subjects_data.values():
-        subject['average'] = sum(subject['scores']) / len(subject['scores'])
+        if subject['scores']:
+            subject['average'] = sum(subject['scores']) / len(subject['scores'])
     
     overall_average = total_score / total_count if total_count > 0 else 0
     
@@ -302,6 +314,42 @@ def my_subjects(request):
         'user_data': user_data,
         'subjects_data': subjects_data,
         'overall_average': overall_average
+    })
+
+def subject_detail(request, subject_name):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    
+    if user_type != 'student':
+        messages.error(request, 'Acceso denegado')
+        return redirect('dashboard')
+    
+    user_data = Student.objects.get(ci=user_id)
+    
+    # Obtener el curso específico
+    try:
+        course = Course.objects.get(name_course=subject_name, grade=user_data.grade)
+    except Course.DoesNotExist:
+        messages.error(request, 'Materia no encontrada')
+        return redirect('my_subjects')
+    
+    # Obtener puntuaciones del estudiante para esta materia
+    punctuations = Punctuation.objects.filter(
+        student=user_data,
+        evaluation__course=course
+    ).select_related('evaluation').order_by('evaluation__date')
+    
+    # Calcular promedio
+    scores = [float(p.score) for p in punctuations]
+    average = sum(scores) / len(scores) if scores else 0
+    
+    return render(request, 'subject_detail.html', {
+        'user_type': user_type,
+        'user_data': user_data,
+        'subject_name': subject_name,
+        'course': course,
+        'punctuations': punctuations,
+        'average': average
     })
 
 def logout_view(request):

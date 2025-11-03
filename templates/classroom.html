@@ -44,7 +44,7 @@
                             </div>
                             {% if forloop.counter == 1 %}
                                 <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-crown text-yellow-600"></i>
+                                    <i class="fa-solid fa-crown text-yellow-600"></i>
                                 </div>
                             {% elif forloop.counter == 2 %}
                                 <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
@@ -145,7 +145,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <input type="number" name="score_{{ evaluation.id }}" 
                                    value="{{ evaluation.score }}" 
-                                   step="0.01" min="0" max="100" 
+                                   step="0.01" min="0" max="20" 
                                    class="w-20 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
                                    required>
                         </td>

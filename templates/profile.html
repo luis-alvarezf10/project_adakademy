@@ -9,7 +9,7 @@
     <div class="bg-white rounded-xl card-shadow">
         <div class="p-6 border-b border-gray-200">
             <h3 class="text-xl font-semibold text-gray-800">
-                <i class="fas fa-user-edit mr-2 text-purple-600"></i>Información Personal
+                <i class="fa-solid fa-user-pen mr-2 text-purple-600"></i>Información Personal
             </h3>
         </div>
         
@@ -19,26 +19,21 @@
                     <i class="fas fa-user text-purple-600 text-3xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-800">
-                        {% if user_type == 'student' %}
-                            {{ user_data.name_student }}
-                        {% else %}
-                            {{ user_data.name_teacher }}
-                        {% endif %}
-                    </h2>
-                    <p class="text-gray-600 capitalize">{{ user_type }}</p>
+                    <div class="flex items-center gap-5">
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            {{ user_data.username}}
+                        </h2>
+                        <a href="#"><i class="fa-solid fa-pen-to-square p-2 text-purple-600"></i></a>
+                    </div>
+                    <p class="text-sm text-gray-600 capitalize">{{ user_type }}</p>
                 </div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
                     <div class="bg-gray-50 p-3 rounded-lg">
-                        {% if user_type == 'student' %}
-                            {{ user_data.name_student }}
-                        {% else %}
-                            {{ user_data.name_teacher }}
-                        {% endif %}
+                        {{ user_data.name | title }} {{ user_data.last_name | title }}
                     </div>
                 </div>
                 
