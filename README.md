@@ -107,7 +107,7 @@
             <tr>
                 <th>n</th>
                 <th>Nombre</th>
-                <th>Contacto (Opcional)</th>
+                <th>Contacto</th>
             </tr>
         </thead>
         <tbody>
