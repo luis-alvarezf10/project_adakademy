@@ -1,6 +1,5 @@
 <header>
     <h1>🚀 Think It - Sistema de Gestión Escolar</h1>
-    <p>[Reemplazar con una imagen o captura de pantalla representativa de la aplicación]</p>
 </header>
 
 <hr>
@@ -8,7 +7,7 @@
 <section id="descripcion">
     <h2>Descripción del Proyecto</h2>
     <p><strong>Think It</strong> es una aplicación web integral diseñada para la <strong>gestión de notas, asignaturas, profesores y alumnos</strong> en un entorno escolar. Desarrollada como proyecto final de curso de desarrollo web con <strong>Django</strong>, busca optimizar la administración académica, proporcionando una interfaz clara y funcional para los distintos usuarios del sistema.</p>
-    <p>Este proyecto fue desarrollado por un equipo de estudiantes como demostración de nuestras habilidades en el <em>backend</em> (Django, Python) y el <em>frontend</em> (HTML, CSS, JavaScript) siguiendo metodologías de desarrollo ágil.</p>
+    <p>Este proyecto fue desarrollado por Luis Álvarez, José Castillo, Angel Romero un equipo de estudiantes como demostración de nuestras habilidades en el <em>backend</em> (Django, Python) y el <em>frontend</em> (HTML, CSS, JavaScript) siguiendo metodologías de desarrollo ágil.</p>
 </section>
 
 <hr>
@@ -16,12 +15,10 @@
 <section id="caracteristicas">
     <h2>✨ Características Principales</h2>
     <ul>
-        <li><strong>👤 Gestión de Usuarios y Roles:</strong> Diferentes niveles de acceso para <strong>Administradores</strong>, <strong>Profesores</strong> y <strong>Alumnos</strong>.</li>
-        <li><strong>📚 Gestión de Asignaturas:</strong> Creación, edición y listado de materias.</li>
-        <li><strong>🧑‍🏫 Gestión de Profesores:</strong> Registro y asignación de profesores a asignaturas y cursos.</li>
+        <li><strong>👤 Gestión de Usuarios y Roles:</strong> Diferentes niveles de acceso para <strong>Profesores</strong> y <strong>Alumnos</strong>.</li>
         <li><strong>🎓 Gestión de Alumnos:</strong> Inscripción, información detallada y seguimiento del rendimiento.</li>
         <li><strong>📝 Gestión de Calificaciones:</strong> Carga y visualización de notas por periodo/evaluación.</li>
-        <li><strong>📈 Dashboard Informativo:</strong> Resumen visual del estado académico (para administradores y profesores).</li>
+        <li><strong>📈 Dashboard Informativo:</strong> Resumen visual del estado académico.</li>
     </ul>
 </section>
 
@@ -35,8 +32,7 @@
     <ul>
         <li><strong>Python:</strong> Lenguaje de programación principal.</li>
         <li><strong>Django:</strong> Framework web principal.</li>
-        <li><strong>Django REST Framework (Opcional):</strong> Si se implementó alguna API.</li>
-        <li><strong>Base de Datos:</strong> [**PostgreSQL**, **MySQL**, **SQLite** (por defecto)].</li>
+        <li><strong>Base de Datos:</strong> **SQLite** (por defecto).</li>
     </ul>
 
     <h3>Frontend</h3>
@@ -44,12 +40,15 @@
         <li><strong>HTML5</strong></li>
         <li><strong>CSS3</strong></li>
         <li><strong>JavaScript</strong></li>
-        <li><strong>Framework CSS (Opcional):</strong> [**Bootstrap**, **Tailwind CSS**, etc.].</li>
+        <li><strong>Tailwind css:</strong> Framework web para estilos</li>
     </ul>
 
     <h3>Herramientas de Desarrollo</h3>
     <ul>
         <li><strong>Git / GitHub:</strong> Control de versiones.</li>
+        <li><strong>Python Anywhere:</strong> Despliegue de pagina web.</li>
+        <li><strong>Trello:</strong> Gestión de actividades a realizar en el proyecto.</li>
+        <li><strong>Whimsical:</strong> Diseño diagramas de modelos de entidad relacional y de casos de uso.</li>
     </ul>
 </section>
 
@@ -111,26 +110,26 @@ source venv/bin/activate</code></pre>
     <table>
         <thead>
             <tr>
-                <th>Rol</th>
+                <th>n</th>
                 <th>Nombre</th>
                 <th>Contacto (Opcional)</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Desarrollador/a Backend</td>
-                <td>[Tu Nombre]</td>
-                <td>[Tu Link de GitHub/LinkedIn]</td>
+                <td>1</td>
+                <td>Luis Alvarez</td>
+                <td>...</td>
             </tr>
             <tr>
-                <td>Desarrollador/a Frontend</td>
-                <td>[Nombre del Compañero 1]</td>
-                <td>[Link de GitHub/LinkedIn]</td>
+                <td>2</td>
+                <td>José Castillo</td>
+                <td>...</td>
             </tr>
             <tr>
-                <td>[Otro Rol, ej: QA/Testing]</td>
-                <td>[Nombre del Compañero 2]</td>
-                <td>[Link de GitHub/LinkedIn]</td>
+                <td>3</td>
+                <td>Angel Romero</td>
+                <td>...</td>
             </tr>
             <tr>
                 <td>...</td>
@@ -145,5 +144,5 @@ source venv/bin/activate</code></pre>
 
 <section id="licencia">
     <h2>📄 Licencia</h2>
-    <p>Este proyecto está bajo la licencia [**MIT License** o la que hayan elegido].</p>
+    <p>Este proyecto está bajo la licencia.</p>
 </section>
