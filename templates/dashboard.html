@@ -102,7 +102,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-gray-600 text-sm font-medium">Total Estudiantes</p>
-                <p class="text-3xl font-bold text-blue-600">45</p>
+                <p class="text-3xl font-bold text-blue-600">{{ total_students }}</p>
             </div>
             <div class="bg-blue-100 p-3 rounded-full">
                 <i class="fas fa-users text-blue-600 text-xl"></i>
@@ -125,11 +125,11 @@
     <div class="bg-white rounded-xl p-6 card-shadow">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 text-sm font-medium">Promedio Clase</p>
-                <p class="text-3xl font-bold text-purple-600">82.3</p>
+                <p class="text-gray-600 text-sm font-medium">Materias Asignadas</p>
+                <p class="text-3xl font-bold text-purple-600">{{ courses_count }}</p>
             </div>
             <div class="bg-purple-100 p-3 rounded-full">
-                <i class="fas fa-chart-bar text-purple-600 text-xl"></i>
+                <i class="fas fa-book text-purple-600 text-xl"></i>
             </div>
         </div>
     </div>

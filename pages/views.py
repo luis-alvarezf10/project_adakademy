@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.db import models
 from model_students.models import Student, Teacher, Evaluation, Course, Punctuation
 
 def home(request):
@@ -101,20 +102,29 @@ def dashboard(request):
         approved_evaluations = 0
         # Contar materias asignadas al profesor
         courses_count = Course.objects.filter(teacher=user_data).count()
+        # Calcular total de estudiantes únicos en los grados de las materias del profesor
+        teacher_courses = Course.objects.filter(teacher=user_data)
+        total_students = Student.objects.filter(grade__in=teacher_courses.values('grade')).distinct().count()
         # Próximas evaluaciones del profesor
         upcoming_evaluations = Evaluation.objects.filter(
             course__teacher=user_data,
             date__gt=timezone.now()
         ).order_by('date')[:5]
     
-    return render(request, 'dashboard.html', {
+    context = {
         'user_type': user_type,
         'user_data': user_data,
         'evaluations': evaluations,
         'approved_evaluations': approved_evaluations,
         'courses_count': courses_count,
         'upcoming_evaluations': upcoming_evaluations
-    })
+    }
+    
+    # Agregar total_students solo para profesores
+    if user_type == 'teacher':
+        context['total_students'] = total_students
+    
+    return render(request, 'dashboard.html', context)
 
 def update_evaluations(request):
     # Verificar si el usuario está logueado y es profesor
@@ -141,24 +151,66 @@ def classroom(request):
     
     if user_type == 'student':
         user_data = Student.objects.get(ci=user_id)
-        # Obtener compañeros del mismo grado ordenados por promedio
         from django.db.models import Avg
         students = Student.objects.filter(grade=user_data.grade).annotate(
             promedio=Avg('punctuation__score')
         ).order_by('-promedio')
-        evaluations = None
+        return render(request, 'classroom.html', {
+            'user_type': user_type,
+            'user_data': user_data,
+            'students': students
+        })
     else:
-        user_data = Teacher.objects.get(ci=user_id)
-        # Obtener todos los estudiantes y sus puntuaciones
-        students = Student.objects.all()
-        evaluations = Punctuation.objects.all().select_related('student', 'evaluation__course')
-    
-    return render(request, 'classroom.html', {
-        'user_type': user_type,
-        'user_data': user_data,
-        'students': students,
-        'evaluations': evaluations
-    })
+        teacher = Teacher.objects.get(ci=user_id)
+        
+        # Obtener materias del profesor
+        teacher_courses = Course.objects.filter(teacher=teacher)
+        
+        # Estadísticas generales
+        from django.db.models import Avg, Count
+        total_students = Student.objects.filter(grade__in=teacher_courses.values('grade')).distinct().count()
+        total_evaluations = Evaluation.objects.filter(course__teacher=teacher).count()
+        
+        # Estudiantes por materia con promedios
+        courses_data = []
+        for course in teacher_courses:
+            students = Student.objects.filter(grade=course.grade).annotate(
+                promedio=Avg('punctuation__score', filter=models.Q(punctuation__evaluation__course=course))
+            ).order_by('name', 'last_name')
+            
+            # Evaluaciones recientes de la materia
+            recent_evaluations = Evaluation.objects.filter(course=course).order_by('-date')[:3]
+            
+            courses_data.append({
+                'course': course,
+                'students': students,
+                'students_count': students.count(),
+                'recent_evaluations': recent_evaluations
+            })
+        
+        # Evaluaciones pendientes de calificar
+        from django.utils import timezone
+        pending_evaluations = []
+        for course in teacher_courses:
+            evaluations = Evaluation.objects.filter(course=course)
+            for evaluation in evaluations:
+                students_count = Student.objects.filter(grade=course.grade).count()
+                graded_count = Punctuation.objects.filter(evaluation=evaluation).count()
+                if graded_count < students_count:
+                    pending_evaluations.append({
+                        'evaluation': evaluation,
+                        'pending_count': students_count - graded_count,
+                        'total_count': students_count
+                    })
+        
+        return render(request, 'classroom.html', {
+            'user_type': user_type,
+            'user_data': teacher,
+            'courses_data': courses_data,
+            'total_students': total_students,
+            'total_evaluations': total_evaluations,
+            'pending_evaluations': pending_evaluations[:5]  # Solo las 5 más recientes
+        })
 
 def manage_evaluations(request):
     user_type = request.session.get('user_type')
@@ -193,19 +245,16 @@ def create_evaluation(request):
             course_id = request.POST['course_id']
             course = Course.objects.get(id=course_id, teacher=teacher)
             
-            # Crear evaluación para todos los estudiantes (sin asignar estudiante específico)
-            # Los estudiantes verán la evaluación disponible para su materia
+            # Crear evaluación
             Evaluation.objects.create(
                 date=request.POST['date'],
                 subject=request.POST['subject'],
                 type=request.POST['type'],
-                score=0,  # Puntuación inicial 0, se actualizará después
-                course=course,
-                student=None  # Sin estudiante específico
+                course=course
             )
             messages.success(request, f'Evaluación creada para la materia {course.name_course}')
         except Exception as e:
-            messages.error(request, 'Error al crear la evaluación')
+            messages.error(request, f'Error al crear la evaluación: {str(e)}')
     
     return redirect('manage_evaluations')
 
@@ -338,111 +387,219 @@ def subject_detail(request, subject_name):
         'average': average
     })
 
-def profile(request):
+def grade_evaluation(request, eval_id):
     user_type = request.session.get('user_type')
     user_id = request.session.get('user_id')
     
-    if user_type == 'student':
-        user_data = Student.objects.get(ci=user_id)
-    else:
-        user_data = Teacher.objects.get(ci=user_id)
+    if user_type != 'teacher':
+        messages.error(request, 'Acceso denegado')
+        return redirect('dashboard')
     
-    return render(request, 'profile.html', {
+    teacher = Teacher.objects.get(ci=user_id)
+    evaluation = Evaluation.objects.get(id=eval_id, course__teacher=teacher)
+    
+    # Obtener estudiantes del grado de la materia
+    students = Student.objects.filter(grade=evaluation.course.grade).order_by('name', 'last_name')
+    
+    if request.method == 'POST':
+        for student in students:
+            score_key = f'score_{student.ci}'
+            if score_key in request.POST and request.POST[score_key]:
+                score = float(request.POST[score_key])
+                # Crear o actualizar puntuación
+                punctuation, created = Punctuation.objects.get_or_create(
+                    evaluation=evaluation,
+                    student=student,
+                    defaults={'score': score}
+                )
+                if not created:
+                    punctuation.score = score
+                    punctuation.save()
+        
+        messages.success(request, 'Notas registradas correctamente')
+        return redirect('manage_evaluations')
+    
+    # Obtener puntuaciones existentes y agregar a estudiantes
+    punctuations = Punctuation.objects.filter(evaluation=evaluation)
+    scores_dict = {p.student.ci: p.score for p in punctuations}
+    
+    # Agregar score a cada estudiante
+    students_with_scores = []
+    for student in students:
+        student.current_score = scores_dict.get(student.ci, '')
+        students_with_scores.append(student)
+    
+    return render(request, 'grade_evaluation.html', {
         'user_type': user_type,
-        'user_data': user_data
+        'user_data': teacher,
+        'evaluation': evaluation,
+        'students': students_with_scores
     })
 
-def edit_profile(request):
+def student_reports(request):
     user_type = request.session.get('user_type')
     user_id = request.session.get('user_id')
     
-    if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST.get('password', '')
-        confirm_password = request.POST.get('confirm_password', '')
-        
-        # Validar contraseña si se proporciona
-        if password:
-            if password != confirm_password:
-                messages.error(request, 'Las contraseñas no coinciden')
-                return redirect('edit_profile')
-            if len(password) < 6:
-                messages.error(request, 'La contraseña debe tener al menos 6 caracteres')
-                return redirect('edit_profile')
-        
-        try:
-            if user_type == 'student':
-                student = Student.objects.get(ci=user_id)
-                student.username = username
-                student.email = email
-                if password:
-                    student.password = password
-                if 'profile_photo' in request.FILES:
-                    student.profile_photo = request.FILES['profile_photo']
-                student.save()
-            else:
-                teacher = Teacher.objects.get(ci=user_id)
-                teacher.username = username
-                teacher.email = email
-                if password:
-                    teacher.password = password
-                if 'profile_photo' in request.FILES:
-                    teacher.profile_photo = request.FILES['profile_photo']
-                teacher.save()
-            
-            messages.success(request, 'Perfil actualizado correctamente')
-            return redirect('profile')
-        except:
-            messages.error(request, 'Error al actualizar el perfil')
+    if user_type != 'teacher':
+        messages.error(request, 'Acceso denegado')
+        return redirect('dashboard')
     
-    if user_type == 'student':
-        user_data = Student.objects.get(ci=user_id)
-    else:
-        user_data = Teacher.objects.get(ci=user_id)
+    teacher = Teacher.objects.get(ci=user_id)
     
-    return render(request, 'edit_profile.html', {
+    # Obtener estudiantes de los grados de las materias del profesor
+    teacher_courses = Course.objects.filter(teacher=teacher)
+    students = Student.objects.filter(grade__in=teacher_courses.values('grade')).distinct().order_by('name', 'last_name')
+    
+    return render(request, 'student_reports.html', {
         'user_type': user_type,
-        'user_data': user_data
+        'user_data': teacher,
+        'students': students
     })
 
-def reset_password(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        ci = request.POST['ci']
-        new_password = request.POST['new_password']
-        confirm_password = request.POST['confirm_password']
-        
-        # Validar que las contraseñas coincidan
-        if new_password != confirm_password:
-            messages.error(request, 'Las contraseñas no coinciden')
-            return render(request, 'reset_password.html')
-        
-        # Validar longitud mínima
-        if len(new_password) < 6:
-            messages.error(request, 'La contraseña debe tener al menos 6 caracteres')
-            return render(request, 'reset_password.html')
-        
-        # Buscar usuario por username y cédula
-        try:
-            # Verificar si es estudiante
-            student = Student.objects.get(username=username, ci=ci)
-            student.password = new_password
-            student.save()
-            messages.add_message(request, messages.SUCCESS, 'Contraseña restablecida exitosamente')
-            return render(request, 'reset_password.html')
-        except Student.DoesNotExist:
-            try:
-                # Verificar si es profesor
-                teacher = Teacher.objects.get(username=username, ci=ci)
-                teacher.password = new_password
-                teacher.save()
-                messages.add_message(request, messages.SUCCESS, 'Contraseña restablecida exitosamente')
-                return render(request, 'reset_password.html')
-            except Teacher.DoesNotExist:
-                messages.error(request, 'Usuario no encontrado. Verifica tu nombre de usuario y cédula')
+def generate_student_report(request, student_ci):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
     
-    return render(request, 'reset_password.html')
+    if user_type != 'teacher':
+        messages.error(request, 'Acceso denegado')
+        return redirect('dashboard')
+    
+    teacher = Teacher.objects.get(ci=user_id)
+    student = Student.objects.get(ci=student_ci)
+    
+    # Obtener materias del grado del estudiante
+    courses = Course.objects.filter(grade=student.grade)
+    
+    # Obtener calificaciones del estudiante
+    report_data = []
+    total_score = 0
+    total_count = 0
+    
+    for course in courses:
+        punctuations = Punctuation.objects.filter(
+            student=student,
+            evaluation__course=course
+        ).select_related('evaluation')
+        
+        scores = [float(p.score) for p in punctuations]
+        average = sum(scores) / len(scores) if scores else 0
+        
+        if scores:
+            total_score += average
+            total_count += 1
+        
+        report_data.append({
+            'course': course,
+            'punctuations': punctuations,
+            'average': average,
+            'status': 'Aprobado' if average >= 10 else 'Reprobado'
+        })
+    
+    overall_average = total_score / total_count if total_count > 0 else 0
+    
+    if request.GET.get('pdf'):
+        from django.http import HttpResponse
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.units import inch
+        
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="boletin_{student.name}_{student.last_name}.pdf"'
+        
+        p = canvas.Canvas(response, pagesize=letter)
+        width, height = letter
+        
+        # Header
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(50, height - 50, "ThinkIt - Sistema Académico")
+        p.setFont("Helvetica-Bold", 14)
+        p.drawString(50, height - 80, "BOLETÍN DE CALIFICACIONES")
+        
+        # Student info
+        p.setFont("Helvetica", 12)
+        p.drawString(50, height - 120, f"Estudiante: {student.name} {student.last_name}")
+        p.drawString(50, height - 140, f"Cédula: {student.ci}")
+        p.drawString(50, height - 160, f"Grado: {student.grade}")
+        p.drawString(50, height - 180, f"Promedio General: {overall_average:.2f}")
+        
+        # Table header
+        y = height - 220
+        p.setFont("Helvetica-Bold", 10)
+        p.drawString(50, y, "MATERIA")
+        p.drawString(200, y, "PROMEDIO")
+        p.drawString(300, y, "ESTADO")
+        
+        # Table content
+        p.setFont("Helvetica", 10)
+        y -= 20
+        for data in report_data:
+            p.drawString(50, y, data['course'].name_course)
+            p.drawString(200, y, f"{data['average']:.2f}")
+            p.drawString(300, y, data['status'])
+            y -= 20
+        
+        p.showPage()
+        p.save()
+        return response
+    
+    return render(request, 'student_report_detail.html', {
+        'user_type': user_type,
+        'user_data': teacher,
+        'student': student,
+        'report_data': report_data,
+        'overall_average': overall_average
+    })
+
+def teacher_subjects(request):
+    user_type = request.session.get('user_type')
+    user_id = request.session.get('user_id')
+    
+    # Solo profesores pueden acceder
+    if user_type != 'teacher':
+        messages.error(request, 'Acceso denegado')
+        return redirect('dashboard')
+    
+    teacher = Teacher.objects.get(ci=user_id)
+    
+    # Obtener materias asignadas al profesor
+    courses = Course.objects.filter(teacher=teacher).order_by('grade', 'name_course')
+    
+    # Obtener estadísticas por materia
+    subjects_data = []
+    for course in courses:
+        # Contar estudiantes del grado
+        students_count = Student.objects.filter(grade=course.grade).count()
+        
+        # Contar evaluaciones de la materia
+        evaluations_count = Evaluation.objects.filter(course=course).count()
+        
+        # Calcular promedio general de la materia
+        from django.db.models import Avg
+        avg_score = Punctuation.objects.filter(
+            evaluation__course=course
+        ).aggregate(avg=Avg('score'))['avg'] or 0
+        
+        # Próxima evaluación
+        from django.utils import timezone
+        next_evaluation = Evaluation.objects.filter(
+            course=course,
+            date__gt=timezone.now()
+        ).order_by('date').first()
+        
+        subjects_data.append({
+            'course': course,
+            'students_count': students_count,
+            'evaluations_count': evaluations_count,
+            'average_score': round(avg_score, 2),
+            'next_evaluation': next_evaluation
+        })
+    
+    return render(request, 'teacher_subjects.html', {
+        'user_type': user_type,
+        'user_data': teacher,
+        'subjects_data': subjects_data,
+        'total_courses': len(subjects_data)
+    })
 
 def logout_view(request):
     request.session.flush()

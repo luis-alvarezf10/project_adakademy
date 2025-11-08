@@ -1,0 +1,186 @@
+{% extends 'layouts/_base.html' %}
+
+{% block title %}Mis Materias - ThinkIt{% endblock %}
+
+{% block page_title %}Mis Materias{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Header con estadísticas -->
+    <div class="bg-white rounded-xl card-shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-xl font-semibold text-gray-800">Resumen de Materias</h3>
+                <p class="text-gray-600">Gestiona tus materias asignadas</p>
+            </div>
+            <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg">
+                <i class="fas fa-book mr-2"></i>
+                <span class="font-semibold">{{ total_courses }} Materia{{ total_courses|pluralize }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid de materias -->
+    {% if subjects_data %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for subject in subjects_data %}
+        <div class="bg-white rounded-xl card-shadow hover:shadow-lg transition-shadow duration-300">
+            <!-- Header de la materia -->
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-1">
+                            {{ subject.course.name_course }}
+                        </h4>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-layer-group mr-1"></i>
+                            <span>Grado {{ subject.course.grade }}</span>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-2 rounded-lg">
+                        <i class="fas fa-book text-lg"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="p-6 space-y-4">
+                <!-- Estudiantes -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-users mr-2"></i>
+                        <span class="text-sm">Estudiantes</span>
+                    </div>
+                    <span class="font-semibold text-gray-800">{{ subject.students_count }}</span>
+                </div>
+
+                <!-- Evaluaciones -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-clipboard-list mr-2"></i>
+                        <span class="text-sm">Evaluaciones</span>
+                    </div>
+                    <span class="font-semibold text-gray-800">{{ subject.evaluations_count }}</span>
+                </div>
+
+                <!-- Promedio -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        <span class="text-sm">Promedio</span>
+                    </div>
+                    <span class="font-semibold {% if subject.average_score >= 15 %}text-green-600{% elif subject.average_score >= 10 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                        {{ subject.average_score|floatformat:1 }}
+                    </span>
+                </div>
+
+                <!-- Próxima evaluación -->
+                {% if subject.next_evaluation %}
+                <div class="pt-3 border-t border-gray-100">
+                    <div class="flex items-center text-sm text-gray-600 mb-1">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        <span>Próxima evaluación</span>
+                    </div>
+                    <p class="text-sm font-medium text-gray-800">{{ subject.next_evaluation.subject }}</p>
+                    <p class="text-xs text-gray-500">{{ subject.next_evaluation.date|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% else %}
+                <div class="pt-3 border-t border-gray-100">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-calendar-times mr-2"></i>
+                        <span>Sin evaluaciones programadas</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Acciones -->
+            <div class="px-6 pb-6">
+                <div class="flex space-x-2">
+                    <a href="{% url 'manage_evaluations' %}" 
+                       class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-plus mr-1"></i>
+                        Gestionar
+                    </a>
+                    <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg text-sm transition-colors"
+                            onclick="showSubjectDetails('{{ subject.course.name_course }}', {{ subject.students_count }}, {{ subject.evaluations_count }}, {{ subject.average_score }})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="bg-white rounded-xl card-shadow p-12 text-center">
+        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-book text-3xl text-gray-400"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">No tienes materias asignadas</h3>
+        <p class="text-gray-600 mb-6">Contacta al administrador para que te asigne materias</p>
+        <a href="{% url 'dashboard' %}" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver al Dashboard
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal para detalles de materia -->
+<div id="subjectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800" id="modalTitle">Detalles de Materia</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="modalContent" class="space-y-3">
+            <!-- Contenido dinámico -->
+        </div>
+        <div class="mt-6 flex justify-end">
+            <button onclick="closeModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSubjectDetails(courseName, studentsCount, evaluationsCount, averageScore) {
+    document.getElementById('modalTitle').textContent = courseName;
+    
+    const content = `
+        <div class="space-y-3">
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">Estudiantes matriculados:</span>
+                <span class="font-semibold">${studentsCount}</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">Total de evaluaciones:</span>
+                <span class="font-semibold">${evaluationsCount}</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">Promedio general:</span>
+                <span class="font-semibold ${averageScore >= 15 ? 'text-green-600' : averageScore >= 10 ? 'text-yellow-600' : 'text-red-600'}">${averageScore}</span>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('modalContent').innerHTML = content;
+    document.getElementById('subjectModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('subjectModal').classList.add('hidden');
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('subjectModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+</script>
+{% endblock %}

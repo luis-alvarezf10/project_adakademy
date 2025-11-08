@@ -1,82 +1,50 @@
 {% extends 'layouts/_base.html' %}
 
-{% block title %}Salón de Clases - Sistema de Notas{% endblock %}
+{% block title %}Salón de Clases - ThinkIt{% endblock %}
 
 {% block page_title %}Salón de Clases{% endblock %}
 
 {% block dashboard_content %}
 {% if user_type == 'student' %}
-<!-- Vista para Estudiantes: Lista de Compañeros -->
-<div class="bg-white rounded-lg shadow-sm p-6">
+<!-- Vista para Estudiantes -->
+<div class="bg-white rounded-xl card-shadow p-6">
     <h3 class="text-xl font-semibold text-gray-800 mb-4">
-        <i class="fa-solid fa-users text-blue-600"></i>
-        Compañeros de Clase
+        <i class="fas fa-users text-blue-600 mr-2"></i>
+        Compañeros de Clase - Grado {{ user_data.grade }}
     </h3>
     
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Nombre completo
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Cédula
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Promedio
-                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estudiante</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Promedio</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="divide-y divide-gray-200">
                 {% for student in students %}
                 <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center justify-between gap-5">
-                            <div class="flex items-center">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                <p class="text-blue-600">{{ forloop.counter }}</p>
-                            </div>
-                            <span class="text-sm font-medium text-gray-900">{{student.last_name | title}}, {{ student.name | title}}</span>
-                            </div>
-                            {% if forloop.counter == 1 %}
-                                <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                                    <i class="fa-solid fa-crown text-yellow-600"></i>
-                                </div>
-                            {% elif forloop.counter == 2 %}
-                                <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-medal text-gray-600"></i>
-                                </div>
-                            {% elif forloop.counter == 3 %}
-                                <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-award text-orange-600"></i>
-                                </div>
-                            {% else %}
-                            
-                                {% endif %}
-                            </div>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium mr-3">
+                                {{ forloop.counter }}
+                            </span>
+                            {% if forloop.counter <= 3 %}
+                                <i class="fas {% if forloop.counter == 1 %}fa-crown text-yellow-500{% elif forloop.counter == 2 %}fa-medal text-gray-500{% else %}fa-award text-orange-500{% endif %}"></i>
+                            {% endif %}
+                        </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {{ student.email }}
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900">{{ student.name|title }} {{ student.last_name|title }}</div>
+                        <div class="text-sm text-gray-500">CI: {{ student.ci }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {{ student.ci }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-lg font-bold text-gray-600">
-                        {% if student.promedio %}
-                            {{ student.promedio|floatformat:1 }}
-                        {% else %}
-                            0.0
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">
-                        No hay estudiantes registrados
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ student.email }}</td>
+                    <td class="px-6 py-4">
+                        <span class="text-lg font-bold {% if student.promedio >= 15 %}text-green-600{% elif student.promedio >= 10 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                            {{ student.promedio|default:"0.0"|floatformat:1 }}
+                        </span>
                     </td>
                 </tr>
                 {% endfor %}
@@ -86,90 +54,159 @@
 </div>
 
 {% else %}
-<!-- Vista para Profesores: Editar Solo Puntuaciones -->
-<div class="bg-white rounded-lg shadow-sm p-6">
-    <h3 class="text-lg font-semibold text-gray-800 mb-4">
-        <i class="fas fa-edit mr-2 text-green-600"></i>
-        Editar Puntuaciones
-    </h3>
-    
-    <form method="post" action="{% url 'update_evaluations' %}">
-        {% csrf_token %}
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Estudiante
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Materia
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tipo
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tema
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Fecha
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Puntuación
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for evaluation in evaluations %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                    <i class="fas fa-user text-blue-600 text-sm"></i>
-                                </div>
-                                <span class="text-sm font-medium text-gray-900">{{ evaluation.student.name_student }}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ evaluation.course.name_course }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ evaluation.type }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ evaluation.subject }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ evaluation.date|date:"d/m/Y" }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <input type="number" name="score_{{ evaluation.id }}" 
-                                   value="{{ evaluation.score }}" 
-                                   step="0.01" min="0" max="20" 
-                                   class="w-20 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                   required>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                            No hay evaluaciones registradas
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- Vista para Profesores -->
+<div class="space-y-6">
+    <!-- Estadísticas generales -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-xl card-shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-blue-100 rounded-lg">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Estudiantes</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_students }}</p>
+                </div>
+            </div>
         </div>
         
-        {% if evaluations %}
-        <div class="mt-6 flex justify-end">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center">
-                <i class="fas fa-save mr-2"></i>
-                Actualizar Puntuaciones
-            </button>
+        <div class="bg-white rounded-xl card-shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-green-100 rounded-lg">
+                    <i class="fas fa-clipboard-list text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Evaluaciones Creadas</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_evaluations }}</p>
+                </div>
+            </div>
         </div>
-        {% endif %}
-    </form>
+        
+        <div class="bg-white rounded-xl card-shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-orange-100 rounded-lg">
+                    <i class="fas fa-exclamation-triangle text-orange-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Pendientes</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ pending_evaluations|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluaciones pendientes de calificar -->
+    {% if pending_evaluations %}
+    <div class="bg-white rounded-xl card-shadow">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-clock text-orange-600 mr-2"></i>
+                Evaluaciones Pendientes de Calificar
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="space-y-3">
+                {% for pending in pending_evaluations %}
+                <div class="flex items-center justify-between p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-800">{{ pending.evaluation.subject }}</h4>
+                        <div class="text-sm text-gray-600 mt-1">
+                            <span class="mr-4"><i class="fas fa-book mr-1"></i>{{ pending.evaluation.course.name_course }}</span>
+                            <span class="mr-4"><i class="fas fa-tag mr-1"></i>{{ pending.evaluation.type }}</span>
+                            <span><i class="fas fa-calendar mr-1"></i>{{ pending.evaluation.date|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right">
+                            <div class="text-sm text-gray-600">Pendientes</div>
+                            <div class="font-bold text-orange-600">{{ pending.pending_count }}/{{ pending.total_count }}</div>
+                        </div>
+                        <a href="{% url 'grade_evaluation' pending.evaluation.id %}" 
+                           class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fas fa-edit mr-1"></i>Calificar
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Materias y estudiantes -->
+    {% for course_data in courses_data %}
+    <div class="bg-white rounded-xl card-shadow">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">{{ course_data.course.name_course }}</h3>
+                    <p class="text-sm text-gray-600">Grado {{ course_data.course.grade }} • {{ course_data.students_count }} estudiantes</p>
+                </div>
+                <div class="flex space-x-2">
+                    <a href="{% url 'manage_evaluations' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-plus mr-1"></i>Nueva Evaluación
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <!-- Evaluaciones recientes -->
+            {% if course_data.recent_evaluations %}
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Evaluaciones Recientes</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {% for evaluation in course_data.recent_evaluations %}
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="font-medium text-sm text-gray-800">{{ evaluation.subject }}</div>
+                        <div class="text-xs text-gray-600 mt-1">
+                            <span class="mr-2">{{ evaluation.type }}</span>
+                            <span>{{ evaluation.date|date:"d/m" }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Lista de estudiantes -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estudiante</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">CI</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Promedio</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for student in course_data.students %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <div class="font-medium text-gray-900">{{ student.name|title }} {{ student.last_name|title }}</div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{{ student.ci }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{{ student.email }}</td>
+                            <td class="px-4 py-3">
+                                <span class="font-medium {% if student.promedio >= 15 %}text-green-600{% elif student.promedio >= 10 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                                    {{ student.promedio|default:"Sin notas"|floatformat:1 }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="bg-white rounded-xl card-shadow p-12 text-center">
+        <i class="fas fa-chalkboard-teacher text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">No tienes materias asignadas</h3>
+        <p class="text-gray-600">Contacta al administrador para que te asigne materias</p>
+    </div>
+    {% endfor %}
 </div>
 {% endif %}
 {% endblock %}
