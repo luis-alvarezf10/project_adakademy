@@ -57,8 +57,8 @@
     <h3>1. Clona el Repositorio</h3>
     <div>
         
-        git clone https://www.youtube.com/watch?v=44ziZ12rJwU
-        cd think-it
+        git clone https://github.com/luis-alvarezf10/project_adakademy
+        cd project_adakademy
 
 </div>
     <h3>2. Configura el Entorno Virtual</h3>
